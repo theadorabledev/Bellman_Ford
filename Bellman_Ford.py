@@ -22,10 +22,11 @@ VECTORS = {
 
 def print_vectors(vectors):
     """ Given a vector list, prints it in matrix form. """
-    header = "|" + "|".join([v.ljust(32, ' ') for v in vectors]) + "|"
+    adj_width = 40
+    header = "|" + "|".join([v.ljust(adj_width, ' ') for v in vectors]) + "|"
     print(header)
     print ("-" * len(header))
-    print("|" + "|".join([str(vectors[v]).ljust(32, ' ') for v in vectors]) + "|")
+    print("|" + "|".join([str(vectors[v]).ljust(adj_width, ' ') for v in vectors]) + "|")
 
 def send_update(host, message):
     """ Sends update to other servers. """
@@ -61,6 +62,11 @@ def update_vectors(connection, address):
             if VECTORS.setdefault(v, (float('inf'), None)) > (new_dist, new_hop):
                 VECTORS[v] = (new_dist, new_hop)
                 updates_made = True
+        if updates_made:
+            print("Recieved DV table from", source)
+            print_vectors(vectors)
+            print("New Local Table")
+            print_vectors(VECTORS)
         # if updates_made:
         #     send_update(address, json.dumps(VECTORS))
         pass #update vectors
@@ -96,10 +102,7 @@ def run(port):
         flip_ip = lambda i: ".".join(i.split(".")[:-1] + ["1" if i.split(".")[-1] == "2" else "2"])
         # ip, ping_time
         neighbors = [(flip_ip(i), ping(i, count=5).rtt_avg) for i in [netifaces.ifaddresses(str(i))[2][0]['addr'] for i in netifaces.interfaces() if i not in ["lo", "eth0"]]]
-        print(neighbors)
         for neighbor, dist in neighbors:
-            print(neighbor)
-            print(dist)
             start_new_thread(send_update, (neighbor, json.dumps([hostname, dist, VECTORS]), ))
         time.sleep(10)
 
