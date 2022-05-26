@@ -142,7 +142,7 @@ def run(port):
         else:
             continue
         interface = LOCAL_EDGES[nextHop]
-        doomed_edges -= LOCAL_EDGES[nextHop]
+        doomed_edges -= {LOCAL_EDGES[nextHop]}
         #sudo route add -net 10.10.3.0/24 gw 10.10.4.1
         #os.system(f"sudo ip route add {ip}/32 via {interface}")
         print(check_output(['route', "add", "-net", f"{ip}/32", "gw", interface]))
