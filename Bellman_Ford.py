@@ -65,6 +65,8 @@ def update_vectors(connection, address):
         source, dist, vectors = json.loads(message)
         # Add the neighbors to vectors if communication is booting
         updates_made = False
+        LOCAL_EDGES[source] = address
+
         for v in vectors:
             new_dist = round(dist + vectors[v][0], 2)
             new_hop = [source] + (list(vectors[v][1]) if vectors[v][1] else [])
@@ -124,6 +126,7 @@ def run(port):
         if strikes == 5:
             break
     print("Finished initialization")
+    print(LOCAL_EDGES)
     
 
 run(port)
