@@ -91,7 +91,7 @@ def update_vectors(connection, address):
 def accept_connections(ServerSocket):
     """ If there is a connection, start a new thread to handle it """
     client, address = ServerSocket.accept()
-    print('Connected to: ' + address[0] + ':' + str(address[1]))
+    #print('Connected to: ' + address[0] + ':' + str(address[1]))
     start_new_thread(update_vectors, (client, address[0], ))
 
 def recieve_updates(port):
@@ -155,6 +155,7 @@ def run(port):
     for i, a in interfaces:
         if a in doomed_edges:
             try:
+                print("Dropping", i, a)
                 print(check_output(["ifconfig", i, "down"]))
             except Exception:
                 pass
@@ -168,7 +169,7 @@ def run(port):
                 print(VECTORS[v])
                 print("Actual Result:")
                 try:
-                    print(check_output(["mtr", "-r", "-n", "-c", "5", v[1]]))
+                    print(check_output(["mtr", "-r", "-n", "-c", "5", eval(v)[1]]))
                 except Exception:
                     pass
 
