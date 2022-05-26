@@ -145,7 +145,7 @@ def run(port):
         doomed_edges -= {LOCAL_EDGES[nextHop]}
         #sudo route add -net 10.10.3.0/24 gw 10.10.4.1
         #os.system(f"sudo ip route add {ip}/32 via {interface}")
-        print(check_output(['route', "add", "-net", f"{ip}/32", "gw", interface]))
+        print(check_output(['route', "add", f"{ip}/32", "gw", interface]))
     print("Routing completed.")
     print("Dropping dead interfaces.")
     interfaces = [(i, netifaces.ifaddresses(str(i))[2][0]['addr']) for i in netifaces.interfaces() if i not in ["lo", "eth0"]]
