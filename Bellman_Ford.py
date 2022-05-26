@@ -1,7 +1,7 @@
 import socket
 import netifaces
 from _thread import *
-
+from copy import deepcopy
 from threading import RLock
 
 import json
@@ -19,13 +19,14 @@ ThreadCount = 0
 VECTORS = {
     hostname: [0, None]
 }
+OLD_VECTORS = deepcopy(VECTORS)
 
 def print_vectors(vectors):
     """ Given a vector list, prints it in matrix form. """
     adj_width = 34
     nodes = [v for v in vectors]
     vecs = [str(vectors[v]) for v in vectors]
-    lens = [max(len(nodes[i]), len(vecs[i])) for i in range(len(nodes))]
+    lens = [max(len(nodes[i]), len(vecs[i])) + 2 for i in range(len(nodes))]
     header = "|" + "|".join([nodes[i].ljust(lens[i], ' ') for i in range(len(nodes))]) + "|"
     print ("-" * len(header))
     print(header)
@@ -47,10 +48,6 @@ def send_update(host, message):
     except socket.error as e:
         #print(str(e))
         pass
-    #Response = ClientSocket.recv(2048)
-    
-
-
 def update_vectors(connection, address):
     """ When new vectors are sent from another, update the local vectors."""
     #connection.send(str.encode('You are now connected to the replay server... Type BYE to stop'))
@@ -68,7 +65,7 @@ def update_vectors(connection, address):
                 VECTORS[v] = [new_dist, new_hop]
                 updates_made = True
         if updates_made:
-            print("Recieved DV table from", source)
+            print("Recieved DV table from", source, "which is", dist, "ms away")
             print_vectors(vectors)
             print("New Local Table")
             print_vectors(VECTORS)
@@ -102,7 +99,10 @@ def run(port):
     """ Sets up a listening thread and sends out periodic updates. """
     start_new_thread(recieve_updates, (port, ))
     while True:
-        print_vectors(VECTORS)
+        if(OLD_VECTORS != VECTORS):
+            print("Current State Of Local Table")
+            print_vectors(VECTORS)
+            OLD_VECTORS = deepcopy(VECTORS)
         # simple lambda to flip the interface to get the connected ip
         flip_ip = lambda i: ".".join(i.split(".")[:-1] + ["1" if i.split(".")[-1] == "2" else "2"])
         # ip, ping_time
