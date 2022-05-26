@@ -3,7 +3,7 @@ import netifaces
 from _thread import *
 from copy import deepcopy
 from threading import RLock
-
+import os
 import json
 import time
 from pythonping import ping
@@ -123,11 +123,28 @@ def run(port):
         neighbors = [(flip_ip(i), ping(flip_ip(i), count=5).rtt_avg) for i in [netifaces.ifaddresses(str(i))[2][0]['addr'] for i in netifaces.interfaces() if i not in ["lo", "eth0"]]]
         for neighbor, dist in neighbors:
             start_new_thread(send_update, (neighbor, json.dumps([hostname, round(100 * dist, 2), VECTORS]), ))
-        time.sleep(randint(1, 7)) # Sleep for random amount of time to decrease collision risk
-        if strikes == 5:
+        time.sleep(randint(2, 8)) # Sleep for random amount of time to decrease collision risk
+        if strikes == 6:
             break
-    print("Finished initialization")
+    print("Finished initialization. Setting routes.")
     print(LOCAL_EDGES)
-    
+    for v in VECTORS:
+        name, ip = eval(edge)
+        nextHop = VECTORS[v][1]
+        if nextHop:
+            nextHop = nextHop[0]
+        else:
+            continue
+        interface = flip_ip(LOCAL_EDGES[nextHop])
+        os.system(f"sudo ip route add {ip}/32 via {interface}")
+    print("Routing completed.")
+    while True:
+        query = input("Please enter destination name =>")
+        for v in VECTORS:
+            if v[0] == query:
+                print("Computed Result:")
+                print(VECTORS[v])
+                print("Actual Result:")
+                os.system(f"mtr -r -n -c 5 {v[1]}")
 
 run(port)
