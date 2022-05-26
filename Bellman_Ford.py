@@ -97,6 +97,8 @@ def recieve_updates(port):
 
 def run(port):
     """ Sets up a listening thread and sends out periodic updates. """
+    global VECTORS
+    global OLD_VECTORS
     start_new_thread(recieve_updates, (port, ))
     while True:
         if(OLD_VECTORS != VECTORS):
