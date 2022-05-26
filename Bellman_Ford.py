@@ -1,4 +1,3 @@
-cat bell_ford.py
 import socket
 import netifaces
 from _thread import *
