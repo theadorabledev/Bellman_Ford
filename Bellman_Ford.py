@@ -160,8 +160,10 @@ def run(port):
                 pass
     while True:
         query = input("Please enter destination name =>")
+        print(query)
+        print(VECTORS)
         for v in VECTORS:
-            if v[0] == query:
+            if eval(v)[0] == query:
                 print("Computed Result:")
                 print(VECTORS[v])
                 print("Actual Result:")
