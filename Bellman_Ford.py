@@ -146,7 +146,7 @@ def run(port):
         #sudo route add -net 10.10.3.0/24 gw 10.10.4.1
         #os.system(f"sudo ip route add {ip}/32 via {interface}")
         try:
-            print(check_output(['route', "add", f"{ip}/32", "gw", interface]).decode())
+            print(f"mapping {ip} to {interface}", check_output(['route', "add", f"{ip}/32", "gw", interface]).decode())
         except Exception:
             pass
     print("Routing completed.")
@@ -160,7 +160,7 @@ def run(port):
             except Exception:
                 pass
     while True:
-        query = input("Please enter destination name =>")
+        query = input(f"Source: ({hostname}) Please enter destination name (no need for ip) => ")
         #print(query)
         #print(VECTORS)
         for v in VECTORS:
