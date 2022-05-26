@@ -145,13 +145,19 @@ def run(port):
         doomed_edges -= {LOCAL_EDGES[nextHop]}
         #sudo route add -net 10.10.3.0/24 gw 10.10.4.1
         #os.system(f"sudo ip route add {ip}/32 via {interface}")
-        print(check_output(['route', "add", f"{ip}/32", "gw", interface]))
+        try:
+            print(check_output(['route', "add", f"{ip}/32", "gw", interface]))
+        except Exception:
+            pass
     print("Routing completed.")
     print("Dropping dead interfaces.")
     interfaces = [(i, netifaces.ifaddresses(str(i))[2][0]['addr']) for i in netifaces.interfaces() if i not in ["lo", "eth0"]]
     for i, a in interfaces:
         if a in doomed_edges:
-            print(check_output(["ifconfig", i, "down"]))
+            try:
+                print(check_output(["ifconfig", i, "down"]))
+            except Exception:
+                pass
     while True:
         query = input("Please enter destination name =>")
         for v in VECTORS:
@@ -159,6 +165,9 @@ def run(port):
                 print("Computed Result:")
                 print(VECTORS[v])
                 print("Actual Result:")
-                print(check_output(["mtr", "-r", "-n", "-c", "5", v[1]]))
+                try:
+                    print(check_output(["mtr", "-r", "-n", "-c", "5", v[1]]))
+                except Exception:
+                    pass
 
 run(port)
