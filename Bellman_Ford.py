@@ -22,7 +22,7 @@ VECTORS = {
 
 def print_vectors(vectors):
     """ Given a vector list, prints it in matrix form. """
-    adj_width = 40
+    adj_width = 32
     header = "|" + "|".join([v.ljust(adj_width, ' ') for v in vectors]) + "|"
     print("\n")
     print ("-" * len(header))
@@ -105,9 +105,9 @@ def run(port):
         # simple lambda to flip the interface to get the connected ip
         flip_ip = lambda i: ".".join(i.split(".")[:-1] + ["1" if i.split(".")[-1] == "2" else "2"])
         # ip, ping_time
-        neighbors = [(flip_ip(i), ping(i, count=5).rtt_avg) for i in [netifaces.ifaddresses(str(i))[2][0]['addr'] for i in netifaces.interfaces() if i not in ["lo", "eth0"]]]
+        neighbors = [(flip_ip(i), ping(flip_ip(i), count=5).rtt_avg) for i in [netifaces.ifaddresses(str(i))[2][0]['addr'] for i in netifaces.interfaces() if i not in ["lo", "eth0"]]]
         for neighbor, dist in neighbors:
-            start_new_thread(send_update, (neighbor, json.dumps([hostname, dist, VECTORS]), ))
+            start_new_thread(send_update, (neighbor, json.dumps([hostname, round(100 * dist, 2), VECTORS]), ))
         time.sleep(10)
 
 run(port)
