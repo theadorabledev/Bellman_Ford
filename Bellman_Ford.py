@@ -68,7 +68,7 @@ def update_vectors(connection, address):
         source, dist, vectors = json.loads(message)
         # Add the neighbors to vectors if communication is booting
         updates_made = False
-        LOCAL_EDGES[source] = flip_ip(address)
+        LOCAL_EDGES[source] = address
 
         for v in vectors:
             new_dist = round(dist + vectors[v][0], 2)
@@ -126,13 +126,13 @@ def run(port):
         # ip, ping_time
         neighbors = [(flip_ip(i), ping(flip_ip(i), count=5).rtt_avg) for i in [netifaces.ifaddresses(str(i))[2][0]['addr'] for i in netifaces.interfaces() if i not in ["lo", "eth0"]]]
         for neighbor, dist in neighbors:
-            start_new_thread(send_update, (neighbor, json.dumps([hostname, round(100 * dist, 2), VECTORS]), ))
+            start_new_thread(send_update, (neighbor, json.dumps([hostname, round(1000 * dist, 2), VECTORS]), ))
         time.sleep(randint(2, 8)) # Sleep for random amount of time to decrease collision risk
         if strikes == 10:
             break
     print("Finished initialization. Setting routes.")
     INITIALIZING = False
-    print(LOCAL_EDGES)
+    #print(LOCAL_EDGES)
     doomed_edges = set(LOCAL_EDGES.values())
     for v in VECTORS:
         name, ip = eval(v)
@@ -161,8 +161,8 @@ def run(port):
                 pass
     while True:
         query = input("Please enter destination name =>")
-        print(query)
-        print(VECTORS)
+        #print(query)
+        #print(VECTORS)
         for v in VECTORS:
             if eval(v)[0] == query:
                 print("Computed Result:")
