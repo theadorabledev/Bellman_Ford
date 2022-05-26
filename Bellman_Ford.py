@@ -64,7 +64,7 @@ def update_vectors(connection, address):
         for v in vectors:
             new_dist = round(dist + vectors[v][0], 2)
             new_hop = [source] + (list(vectors[v][1]) if vectors[v][1] else [])
-            if VECTORS.setdefault(v, (float('inf'), None)) > [new_dist, new_hop]:
+            if VECTORS.setdefault(v, [float('inf'), None]) > [new_dist, new_hop]:
                 VECTORS[v] = [new_dist, new_hop]
                 updates_made = True
         if updates_made:
