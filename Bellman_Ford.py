@@ -54,14 +54,13 @@ def update_vectors(connection, address):
     #while True:
     data = connection.recv(2048)
     message = data.decode('utf-8')
-    # if message == 'BYE':
-    #     break
     with LOCK:
         source, dist, vectors = json.loads(message)
         # Add the neighbors to vectors if communication is booting
         updates_made = False
         for v in vectors:
-            new_dist, new_hop = dist + vectors[v][0], tuple([source] + list(vectors[v][1]) if vectors[v][1] else [])
+            new_dist = round(dist + vectors[v][0], 2)
+            new_hop = tuple([source] + (list(vectors[v][1]) if vectors[v][1] else []))
             if VECTORS.setdefault(v, (float('inf'), None)) > (new_dist, new_hop):
                 VECTORS[v] = (new_dist, new_hop)
                 updates_made = True
@@ -79,9 +78,9 @@ def update_vectors(connection, address):
 
 def accept_connections(ServerSocket):
     """ If there is a connection, start a new thread to handle it """
-    Client, address = ServerSocket.accept()
+    client, address = ServerSocket.accept()
     #print('Connected to: ' + address[0] + ':' + str(address[1]))
-    start_new_thread(update_vectors, (Client, address[0], ))
+    start_new_thread(update_vectors, (client, address[0], ))
 
 def recieve_updates(port):
     """ Start listening on the given host & port. Accept any connections offered."""
