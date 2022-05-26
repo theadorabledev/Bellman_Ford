@@ -20,13 +20,13 @@ ThreadCount = 0
 VECTORS = {
     hostname: [0, None]
 }
-OLD_VECTORS = deepcopy(VECTORS)
+OLD_VECTORS = None
 
 def print_vectors(vectors):
     """ Given a vector list, prints it in matrix form. """
     adj_width = 34
     nodes = [v for v in vectors]
-    vecs = [str([vectors[v][0], [n[0] for n in vectors[v][1]] if vectors[v][1] else None]) for v in vectors]
+    vecs = [str([vectors[v][0], [eval(n)[0] for n in vectors[v][1]] if vectors[v][1] else None]) for v in vectors]
     lens = [max(len(nodes[i]), len(vecs[i])) + 2 for i in range(len(nodes))]
     header = "|" + "|".join([nodes[i].ljust(lens[i], ' ') for i in range(len(nodes))]) + "|"
     print ("-" * len(header))
