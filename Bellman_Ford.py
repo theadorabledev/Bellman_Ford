@@ -24,9 +24,13 @@ def print_vectors(vectors):
     """ Given a vector list, prints it in matrix form. """
     adj_width = 40
     header = "|" + "|".join([v.ljust(adj_width, ' ') for v in vectors]) + "|"
+    print("\n")
+    print ("-" * len(header))
     print(header)
     print ("-" * len(header))
     print("|" + "|".join([str(vectors[v]).ljust(adj_width, ' ') for v in vectors]) + "|")
+    print ("-" * len(header))
+    print("\n")
 
 def send_update(host, message):
     """ Sends update to other servers. """
