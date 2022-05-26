@@ -3,7 +3,7 @@ import netifaces
 from _thread import *
 from copy import deepcopy
 from threading import RLock
-import os
+from subprocess import check_output
 import json
 import time
 from pythonping import ping
@@ -11,6 +11,8 @@ from random import randint
 
 #semaphore allows editing the global vectors dict
 LOCK = RLock()
+# Use this to signal an end to outgoing/incoming connections
+INITIALIZING = True
 
 hostname = socket.gethostname().split(".")[0]
 hostname = str(tuple([hostname, socket.gethostbyname(socket.gethostname())]))
@@ -66,7 +68,7 @@ def update_vectors(connection, address):
         source, dist, vectors = json.loads(message)
         # Add the neighbors to vectors if communication is booting
         updates_made = False
-        LOCAL_EDGES[source] = address
+        LOCAL_EDGES[source] = flip_ip(address)
 
         for v in vectors:
             new_dist = round(dist + vectors[v][0], 2)
@@ -102,14 +104,16 @@ def recieve_updates(port):
         pass
     #print(f'Server is listing on the port {port}...')
     ServerSocket.listen()
-    while True:
+    while INITIALIZING:
         accept_connections(ServerSocket)
 
 def run(port):
     """ Sets up a listening thread and sends out periodic updates. """
     global VECTORS
     global OLD_VECTORS
+    global INITIALIZING
     start_new_thread(recieve_updates, (port, ))
+    # Use this to try and detect a stable table state
     strikes = 0
     while True:
         if(OLD_VECTORS != VECTORS):
@@ -124,10 +128,12 @@ def run(port):
         for neighbor, dist in neighbors:
             start_new_thread(send_update, (neighbor, json.dumps([hostname, round(100 * dist, 2), VECTORS]), ))
         time.sleep(randint(2, 8)) # Sleep for random amount of time to decrease collision risk
-        if strikes == 6:
+        if strikes == 10:
             break
     print("Finished initialization. Setting routes.")
+    INITIALIZING = False
     print(LOCAL_EDGES)
+    doomed_edges = set(LOCAL_EDGES.values())
     for v in VECTORS:
         name, ip = eval(v)
         nextHop = VECTORS[v][1]
@@ -135,9 +141,17 @@ def run(port):
             nextHop = nextHop[0]
         else:
             continue
-        interface = flip_ip(LOCAL_EDGES[nextHop])
-        os.system(f"sudo ip route add {ip}/32 via {interface}")
+        interface = LOCAL_EDGES[nextHop]
+        doomed_edges -= LOCAL_EDGES[nextHop]
+        #sudo route add -net 10.10.3.0/24 gw 10.10.4.1
+        #os.system(f"sudo ip route add {ip}/32 via {interface}")
+        print(check_output(['route', "add", "-net", f"{ip}/32", "gw", interface]))
     print("Routing completed.")
+    print("Dropping dead interfaces.")
+    interfaces = [(i, netifaces.ifaddresses(str(i))[2][0]['addr']) for i in netifaces.interfaces() if i not in ["lo", "eth0"]]
+    for i, a in interfaces:
+        if a in doomed_edges:
+            print(check_output(["ifconfig", i, "down"]))
     while True:
         query = input("Please enter destination name =>")
         for v in VECTORS:
@@ -145,6 +159,6 @@ def run(port):
                 print("Computed Result:")
                 print(VECTORS[v])
                 print("Actual Result:")
-                os.system(f"mtr -r -n -c 5 {v[1]}")
+                print(check_output(["mtr", "-r", "-n", "-c", "5", v[1]]))
 
 run(port)
