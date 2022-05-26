@@ -15,7 +15,7 @@ LOCK = RLock()
 INITIALIZING = True
 
 hostname = socket.gethostname().split(".")[0]
-hostname = str(tuple([hostname, socket.gethostbyname(socket.gethostname())]))
+hostname = str(tuple([hostname, socket.gethostbyname(hostname)]))
 port = 1233
 ThreadCount = 0
 
@@ -146,7 +146,7 @@ def run(port):
         #sudo route add -net 10.10.3.0/24 gw 10.10.4.1
         #os.system(f"sudo ip route add {ip}/32 via {interface}")
         try:
-            print(check_output(['route', "add", f"{ip}/32", "gw", interface]))
+            print(check_output(['route', "add", f"{ip}/32", "gw", interface]).decode())
         except Exception:
             pass
     print("Routing completed.")
@@ -156,7 +156,7 @@ def run(port):
         if a in doomed_edges:
             try:
                 print("Dropping", i, a)
-                print(check_output(["ifconfig", i, "down"]))
+                print(check_output(["ifconfig", i, "down"]).decode())
             except Exception:
                 pass
     while True:
@@ -169,7 +169,7 @@ def run(port):
                 print(VECTORS[v])
                 print("Actual Result:")
                 try:
-                    print(check_output(["mtr", "-r", "-n", "-c", "5", eval(v)[1]]))
+                    print(check_output(["mtr", "-r", "-n", "-c", "5", eval(v)[1]]).decode())
                 except Exception:
                     pass
 
