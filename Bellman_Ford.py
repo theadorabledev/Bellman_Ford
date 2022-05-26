@@ -12,6 +12,7 @@ from pythonping import ping
 LOCK = RLock()
 
 hostname = socket.gethostname().split(".")[0]
+hostname = (hostname, socket.gethostbyname(socket.gethostname()))
 port = 1233
 ThreadCount = 0
 
