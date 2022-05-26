@@ -3,4 +3,4 @@ install:
 	pip3 install netifaces
 	pip3 install pythonping
 run:
-	python3 Bellman_Ford.py
+	sudo python3 Bellman_Ford.py
