@@ -17,17 +17,20 @@ ThreadCount = 0
 
 #host => [cost, nextHop]
 VECTORS = {
-    hostname: (0, None)
+    hostname: [0, None]
 }
 
 def print_vectors(vectors):
     """ Given a vector list, prints it in matrix form. """
     adj_width = 34
-    header = "|" + "|".join([v.ljust(adj_width, ' ') for v in vectors]) + "|"
+    nodes = [v for v in vectors]
+    vecs = [str(vectors[v]) for v in vectors]
+    lens = [max(len(nodes[i]), len(vecs[i])) for i in range(len(nodes))]
+    header = "|" + "|".join([nodes[i].ljust(lens[i], ' ') for i in range(len(nodes))]) + "|"
     print ("-" * len(header))
     print(header)
     print ("-" * len(header))
-    print("|" + "|".join([str(vectors[v]).ljust(adj_width, ' ') for v in vectors]) + "|")
+    print("|" + "|".join([vecs[i].ljust(lens[i], ' ') for i in range(len(nodes))]) + "|")
     print ("-" * len(header))
     print("\n")
 
@@ -60,9 +63,9 @@ def update_vectors(connection, address):
         updates_made = False
         for v in vectors:
             new_dist = round(dist + vectors[v][0], 2)
-            new_hop = tuple([source] + (list(vectors[v][1]) if vectors[v][1] else []))
-            if VECTORS.setdefault(v, (float('inf'), None)) > (new_dist, new_hop):
-                VECTORS[v] = (new_dist, new_hop)
+            new_hop = [source] + (list(vectors[v][1]) if vectors[v][1] else [])
+            if VECTORS.setdefault(v, (float('inf'), None)) > [new_dist, new_hop]:
+                VECTORS[v] = [new_dist, new_hop]
                 updates_made = True
         if updates_made:
             print("Recieved DV table from", source)
