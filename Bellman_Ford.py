@@ -7,6 +7,7 @@ from threading import RLock
 import json
 import time
 from pythonping import ping
+from random import randint 
 
 #semaphore allows editing the global vectors dict
 LOCK = RLock()
@@ -122,7 +123,7 @@ def run(port):
         neighbors = [(flip_ip(i), ping(flip_ip(i), count=5).rtt_avg) for i in [netifaces.ifaddresses(str(i))[2][0]['addr'] for i in netifaces.interfaces() if i not in ["lo", "eth0"]]]
         for neighbor, dist in neighbors:
             start_new_thread(send_update, (neighbor, json.dumps([hostname, round(100 * dist, 2), VECTORS]), ))
-        time.sleep(5)
+        time.sleep(randint(1, 7)) # Sleep for random amount of time to decrease collision risk
         if strikes == 5:
             break
     print("Finished initialization")
