@@ -24,7 +24,8 @@ def print_vectors(vectors):
     """ Given a vector list, prints it in matrix form. """
     header = "|" + "|".join([v.ljust(32, ' ') for v in vectors]) + "|"
     print(header)
-    print("|" + "|".join([vectors[v].ljust(32, ' ') for v in vectors]) + "|")
+    print ("-" * len(header))
+    print("|" + "|".join([str(vectors[v]).ljust(32, ' ') for v in vectors]) + "|")
 
 def send_update(host, message):
     """ Sends update to other servers. """
