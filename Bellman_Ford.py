@@ -129,7 +129,7 @@ def run(port):
     print("Finished initialization. Setting routes.")
     print(LOCAL_EDGES)
     for v in VECTORS:
-        name, ip = eval(edge)
+        name, ip = eval(v)
         nextHop = VECTORS[v][1]
         if nextHop:
             nextHop = nextHop[0]
