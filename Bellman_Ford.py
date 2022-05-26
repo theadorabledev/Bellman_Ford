@@ -17,14 +17,20 @@ port = 1233
 ThreadCount = 0
 
 #host => [cost, nextHop]
+LOCAL_EDGES = {
+    
+}
+
 VECTORS = {
     hostname: [0, None]
 }
 OLD_VECTORS = None
 
+# simple lambda to flip the interface to get the connected ip
+flip_ip = lambda i: ".".join(i.split(".")[:-1] + ["1" if i.split(".")[-1] == "2" else "2"])
+
 def print_vectors(vectors):
     """ Given a vector list, prints it in matrix form. """
-    adj_width = 34
     nodes = [v for v in vectors]
     vecs = [str([vectors[v][0], [eval(n)[0] for n in vectors[v][1]] if vectors[v][1] else None]) for v in vectors]
     lens = [max(len(nodes[i]), len(vecs[i])) + 2 for i in range(len(nodes))]
@@ -80,7 +86,7 @@ def update_vectors(connection, address):
 def accept_connections(ServerSocket):
     """ If there is a connection, start a new thread to handle it """
     client, address = ServerSocket.accept()
-    #print('Connected to: ' + address[0] + ':' + str(address[1]))
+    print('Connected to: ' + address[0] + ':' + str(address[1]))
     start_new_thread(update_vectors, (client, address[0], ))
 
 def recieve_updates(port):
@@ -101,17 +107,23 @@ def run(port):
     global VECTORS
     global OLD_VECTORS
     start_new_thread(recieve_updates, (port, ))
+    strikes = 0
     while True:
         if(OLD_VECTORS != VECTORS):
             print("Current State Of Local Table")
             print_vectors(VECTORS)
             OLD_VECTORS = deepcopy(VECTORS)
-        # simple lambda to flip the interface to get the connected ip
-        flip_ip = lambda i: ".".join(i.split(".")[:-1] + ["1" if i.split(".")[-1] == "2" else "2"])
+            strikes = 0
+        else:
+            strikes += 1
         # ip, ping_time
         neighbors = [(flip_ip(i), ping(flip_ip(i), count=5).rtt_avg) for i in [netifaces.ifaddresses(str(i))[2][0]['addr'] for i in netifaces.interfaces() if i not in ["lo", "eth0"]]]
         for neighbor, dist in neighbors:
             start_new_thread(send_update, (neighbor, json.dumps([hostname, round(100 * dist, 2), VECTORS]), ))
-        time.sleep(10)
+        time.sleep(5)
+        if strikes == 5:
+            break
+    print("Finished initialization")
+    
 
 run(port)
