@@ -22,9 +22,8 @@ VECTORS = {
 
 def print_vectors(vectors):
     """ Given a vector list, prints it in matrix form. """
-    adj_width = 32
+    adj_width = 34
     header = "|" + "|".join([v.ljust(adj_width, ' ') for v in vectors]) + "|"
-    print("\n")
     print ("-" * len(header))
     print(header)
     print ("-" * len(header))
@@ -62,7 +61,7 @@ def update_vectors(connection, address):
         # Add the neighbors to vectors if communication is booting
         updates_made = False
         for v in vectors:
-            new_dist, new_hop = dist + vectors[v][0], source
+            new_dist, new_hop = dist + vectors[v][0], tuple([source] + list(vectors[v][1]) if vectors[v][1] else [])
             if VECTORS.setdefault(v, (float('inf'), None)) > (new_dist, new_hop):
                 VECTORS[v] = (new_dist, new_hop)
                 updates_made = True
